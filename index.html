@@ -31,7 +31,7 @@
 </head>
 <body>
   <div id="container">
-    <h1>Draw on Canvas following Music/3D Animation</h1>
+    <h1>Draw on Canvas</h1>
     <canvas id="drawingCanvas" width="800" height="600"></canvas>
     <br>
     <label for="drawingColor">Drawing Color:</label>
@@ -39,6 +39,13 @@
 
     <label for="backgroundColor">Background Color:</label>
     <input type="color" id="backgroundColor" value="#ffffff">
+
+    <br>
+    <label for="shapeType">Shape:</label>
+    <select id="shapeType">
+      <option value="line">Line</option>
+      <option value="rectangle">Rectangle</option>
+    </select>
   </div>
 
   <script>
@@ -46,8 +53,10 @@
       const canvas = document.getElementById('drawingCanvas');
       const context = canvas.getContext('2d');
       let isDrawing = false;
+      let shapeType = 'line'; // Default shape is line
       const drawingColorInput = document.getElementById('drawingColor');
       const backgroundColorInput = document.getElementById('backgroundColor');
+      const shapeTypeSelect = document.getElementById('shapeType');
 
       function startDrawing(e) {
         isDrawing = true;
@@ -66,10 +75,23 @@
         context.lineCap = 'round';
         context.strokeStyle = drawingColorInput.value;
 
-        context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        const x = e.clientX - canvas.offsetLeft;
+        const y = e.clientY - canvas.offsetTop;
+
+        if (shapeType === 'line') {
+          context.lineTo(x, y);
+          context.stroke();
+          context.beginPath();
+          context.moveTo(x, y);
+        } else if (shapeType === 'rectangle') {
+          // Draw a rectangle starting from the initial click position
+          const startX = e.clientX - canvas.offsetLeft;
+          const startY = e.clientY - canvas.offsetTop;
+          const width = 50; // Change this value to control the width of the rectangle
+          const height = 30; // Change this value to control the height of the rectangle
+
+          context.strokeRect(startX, startY, width, height);
+        }
       }
 
       canvas.addEventListener('mousedown', startDrawing);
@@ -79,6 +101,11 @@
       // Change background color when the input changes
       backgroundColorInput.addEventListener('input', function () {
         canvas.style.backgroundColor = backgroundColorInput.value;
+      });
+
+      // Change shape type when the selection changes
+      shapeTypeSelect.addEventListener('change', function () {
+        shapeType = shapeTypeSelect.value;
       });
     });
   </script>
