@@ -45,7 +45,12 @@
     <select id="shapeType">
       <option value="line">Line</option>
       <option value="rectangle">Rectangle</option>
+      <option value="circle">Circle</option>
+      <option value="triangle">Triangle</option>
     </select>
+
+    <button id="undoButton">Undo</button>
+    <button id="eraserButton">Eraser</button>
   </div>
 
   <script>
@@ -54,9 +59,14 @@
       const context = canvas.getContext('2d');
       let isDrawing = false;
       let shapeType = 'line'; // Default shape is line
+      let drawingColor = '#000';
+      let eraserMode = false;
+      let shapes = []; // Array to store drawn shapes
       const drawingColorInput = document.getElementById('drawingColor');
       const backgroundColorInput = document.getElementById('backgroundColor');
       const shapeTypeSelect = document.getElementById('shapeType');
+      const undoButton = document.getElementById('undoButton');
+      const eraserButton = document.getElementById('eraserButton');
 
       function startDrawing(e) {
         isDrawing = true;
@@ -66,32 +76,130 @@
       function stopDrawing() {
         isDrawing = false;
         context.beginPath();
+        shapes.push({
+          type: shapeType,
+          color: drawingColor,
+          points: []
+        });
       }
 
       function draw(e) {
         if (!isDrawing) return;
 
-        context.lineWidth = 5;
-        context.lineCap = 'round';
-        context.strokeStyle = drawingColorInput.value;
-
         const x = e.clientX - canvas.offsetLeft;
         const y = e.clientY - canvas.offsetTop;
+
+        if (shapeType === 'line' || shapeType === 'rectangle' || shapeType === 'circle' || shapeType === 'triangle') {
+          drawShape(x, y);
+        }
+      }
+
+      function drawShape(x, y) {
+        context.lineWidth = 5;
+        context.lineCap = 'round';
+
+        if (eraserMode) {
+          context.strokeStyle = backgroundColorInput.value;
+        } else {
+          context.strokeStyle = drawingColor;
+        }
+
+        const currentShape = shapes[shapes.length - 1];
 
         if (shapeType === 'line') {
           context.lineTo(x, y);
           context.stroke();
           context.beginPath();
           context.moveTo(x, y);
+
+          currentShape.points.push({ x, y });
         } else if (shapeType === 'rectangle') {
-          // Draw a rectangle starting from the initial click position
-          const startX = e.clientX - canvas.offsetLeft;
-          const startY = e.clientY - canvas.offsetTop;
-          const width = 50; // Change this value to control the width of the rectangle
-          const height = 30; // Change this value to control the height of the rectangle
+          const startX = currentShape.points[0].x;
+          const startY = currentShape.points[0].y;
+          const width = x - startX;
+          const height = y - startY;
 
           context.strokeRect(startX, startY, width, height);
+
+          currentShape.points = [
+            { x: startX, y: startY },
+            { x: startX + width, y: startY },
+            { x: startX + width, y: startY + height },
+            { x: startX, y: startY + height }
+          ];
+        } else if (shapeType === 'circle') {
+          const startX = currentShape.points[0].x;
+          const startY = currentShape.points[0].y;
+          const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+
+          context.beginPath();
+          context.arc(startX, startY, radius, 0, 2 * Math.PI);
+          context.stroke();
+
+          currentShape.points = [{ x: startX, y: startY, radius }];
+        } else if (shapeType === 'triangle') {
+          if (currentShape.points.length < 2) {
+            context.lineTo(x, y);
+            context.stroke();
+            currentShape.points.push({ x, y });
+          } else {
+            context.beginPath();
+            context.moveTo(currentShape.points[0].x, currentShape.points[0].y);
+            context.lineTo(x, y);
+            context.lineTo(currentShape.points[1].x, currentShape.points[1].y);
+            context.closePath();
+            context.stroke();
+
+            currentShape.points.push({ x, y });
+          }
         }
+      }
+
+      function undoLastShape() {
+        if (shapes.length > 0) {
+          shapes.pop();
+          redrawCanvas();
+        }
+      }
+
+      function toggleEraser() {
+        eraserMode = !eraserMode;
+        eraserButton.classList.toggle('active', eraserMode);
+      }
+
+      function redrawCanvas() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        shapes.forEach(shape => {
+          context.strokeStyle = shape.color;
+
+          if (shape.type === 'line') {
+            context.beginPath();
+            context.moveTo(shape.points[0].x, shape.points[0].y);
+            shape.points.forEach(point => context.lineTo(point.x, point.y));
+            context.stroke();
+          } else if (shape.type === 'rectangle') {
+            const startX = shape.points[0].x;
+            const startY = shape.points[0].y;
+            const width = shape.points[1].x - startX;
+            const height = shape.points[2].y - startY;
+
+            context.strokeRect(startX, startY, width, height);
+          } else if (shape.type === 'circle') {
+            const startX = shape.points[0].x;
+            const startY = shape.points[0].y;
+            const radius = shape.points[0].radius;
+
+            context.beginPath();
+            context.arc(startX, startY, radius, 0, 2 * Math.PI);
+            context.stroke();
+          } else if (shape.type === 'triangle') {
+            context.beginPath();
+            context.moveTo(shape.points[0].x, shape.points[0].y);
+            shape.points.slice(1).forEach(point => context.lineTo(point.x, point.y));
+            context.closePath();
+            context.stroke();
+          }
+        });
       }
 
       canvas.addEventListener('mousedown', startDrawing);
@@ -107,6 +215,12 @@
       shapeTypeSelect.addEventListener('change', function () {
         shapeType = shapeTypeSelect.value;
       });
+
+      // Undo the last drawn shape
+      undoButton.addEventListener('click', undoLastShape);
+
+      // Toggle eraser mode
+      eraserButton.addEventListener('click', toggleEraser);
     });
   </script>
 </body>
