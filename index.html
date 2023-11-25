@@ -50,7 +50,6 @@
     </select>
 
     <button id="undoButton">Undo</button>
-    <button id="eraserButton">Eraser</button>
   </div>
 
   <script>
@@ -60,13 +59,11 @@
       let isDrawing = false;
       let shapeType = 'line'; // Default shape is line
       let drawingColor = '#000';
-      let eraserMode = false;
       let shapes = []; // Array to store drawn shapes
       const drawingColorInput = document.getElementById('drawingColor');
       const backgroundColorInput = document.getElementById('backgroundColor');
       const shapeTypeSelect = document.getElementById('shapeType');
       const undoButton = document.getElementById('undoButton');
-      const eraserButton = document.getElementById('eraserButton');
 
       function startDrawing(e) {
         isDrawing = true;
@@ -98,11 +95,7 @@
         context.lineWidth = 5;
         context.lineCap = 'round';
 
-        if (eraserMode) {
-          context.strokeStyle = backgroundColorInput.value;
-        } else {
-          context.strokeStyle = drawingColor;
-        }
+        context.strokeStyle = drawingColor;
 
         const currentShape = shapes[shapes.length - 1];
 
@@ -162,11 +155,6 @@
         }
       }
 
-      function toggleEraser() {
-        eraserMode = !eraserMode;
-        eraserButton.classList.toggle('active', eraserMode);
-      }
-
       function redrawCanvas() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         shapes.forEach(shape => {
@@ -218,9 +206,6 @@
 
       // Undo the last drawn shape
       undoButton.addEventListener('click', undoLastShape);
-
-      // Toggle eraser mode
-      eraserButton.addEventListener('click', toggleEraser);
     });
   </script>
 </body>
