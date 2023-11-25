@@ -12,12 +12,19 @@
 </head>
 <body>
   <canvas id="drawingCanvas" width="800" height="600"></canvas>
+  <label for="drawingColor">Drawing Color:</label>
+  <input type="color" id="drawingColor" value="#000">
+  <br>
+  <label for="backgroundColor">Background Color:</label>
+  <input type="color" id="backgroundColor" value="#ffffff">
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const canvas = document.getElementById('drawingCanvas');
       const context = canvas.getContext('2d');
       let isDrawing = false;
+      const drawingColorInput = document.getElementById('drawingColor');
+      const backgroundColorInput = document.getElementById('backgroundColor');
 
       function startDrawing(e) {
         isDrawing = true;
@@ -34,7 +41,7 @@
 
         context.lineWidth = 5;
         context.lineCap = 'round';
-        context.strokeStyle = '#000';
+        context.strokeStyle = drawingColorInput.value;
 
         context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         context.stroke();
@@ -45,6 +52,11 @@
       canvas.addEventListener('mousedown', startDrawing);
       canvas.addEventListener('mouseup', stopDrawing);
       canvas.addEventListener('mousemove', draw);
+
+      // Change background color when the input changes
+      backgroundColorInput.addEventListener('input', function () {
+        canvas.style.backgroundColor = backgroundColorInput.value;
+      });
     });
   </script>
 </body>
