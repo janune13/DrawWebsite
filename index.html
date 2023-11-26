@@ -206,6 +206,11 @@
         canvas.style.backgroundColor = backgroundColorInput.value;
       });
 
+      // Change drawing color when the input changes
+      drawingColorInput.addEventListener('input', function () {
+        drawingColor = drawingColorInput.value;
+      });
+
       // Change shape type when the selection changes
       shapeTypeSelect.addEventListener('change', function () {
         shapeType = shapeTypeSelect.value;
