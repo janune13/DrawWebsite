@@ -50,6 +50,7 @@
     </select>
 
     <button id="undoButton">Undo</button>
+    <button id="eraseAllButton">Erase All</button>
   </div>
 
   <script>
@@ -64,6 +65,7 @@
       const backgroundColorInput = document.getElementById('backgroundColor');
       const shapeTypeSelect = document.getElementById('shapeType');
       const undoButton = document.getElementById('undoButton');
+      const eraseAllButton = document.getElementById('eraseAllButton');
 
       function startDrawing(e) {
         isDrawing = true;
@@ -71,16 +73,16 @@
       }
 
       function stopDrawing() {
-  if (isDrawing) {
-    isDrawing = false;
-    context.beginPath();
-    shapes.push({
-      type: shapeType,
-      color: drawingColor,
-      points: []
-    });
-  }
-}
+        if (isDrawing) {
+          isDrawing = false;
+          context.beginPath();
+          shapes.push({
+            type: shapeType,
+            color: drawingColor,
+            points: []
+          });
+        }
+      }
 
       function draw(e) {
         if (!isDrawing) return;
@@ -165,6 +167,11 @@
         }
       }
 
+      function eraseAllShapes() {
+        shapes = [];
+        redrawCanvas();
+      }
+
       function redrawCanvas() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         shapes.forEach(shape => {
@@ -220,6 +227,9 @@
 
       // Undo the last drawn shape
       undoButton.addEventListener('click', undoLastShape);
+
+      // Erase all shapes
+      eraseAllButton.addEventListener('click', eraseAllShapes);
     });
   </script>
 </body>
